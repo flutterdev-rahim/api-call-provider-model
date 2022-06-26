@@ -12,6 +12,13 @@ import '../Model/categoriesModel.dart';
 import '../Model/subCategoriesModel.dart';
 import '../Model/subSubCategoriesModel.dart';
 import '../Model/subSubCategoriesModel.dart';
+import 'dart:convert' as convert;
+
+import 'package:http/http.dart' as http;
+
+import '../Provider/subSubCategories_provider.dart';
+
+var categoriesId;
 
 class MainDrawer extends StatefulWidget {
   const MainDrawer({Key? key}) : super(key: key);
@@ -23,6 +30,7 @@ class MainDrawer extends StatefulWidget {
 class _MainDrawerState extends State<MainDrawer> {
   CategoriesProvider? categoriesProvider;
   SubCategoriesProvider? subCategoriesProvider;
+SubSubCategoriesProvider? subSubCategoriesProvider;
   // List<Getcategory> catagorieslist = [];
   // List<Subcategory> subcategorieslist = [];
   List<Subsubcategory> subsubcategorieslist = [];
@@ -55,18 +63,24 @@ class _MainDrawerState extends State<MainDrawer> {
         Provider.of<CategoriesProvider>(context, listen: false);
 
     categoriesProvider?.Getcategorydata();
+    print(
+        ' Categories Length intit: ${categoriesProvider!.catagorieslist.length}');
 
     // GetSubcategories();
-    subCategoriesProvider = Provider.of<SubCategoriesProvider>(context, listen: false);
+    subCategoriesProvider =
+        Provider.of<SubCategoriesProvider>(context, listen: false);
     subCategoriesProvider!.getSubCategoriesdata();
 
-    GetSubSubcategories();
+    
+
+
 
     // TODO: implement initState
     super.initState();
   }
 
   int gobalIndex = 0;
+  int categoriesGobalIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,17 +106,22 @@ class _MainDrawerState extends State<MainDrawer> {
                   itemCount: categoriesProvider!.catagorieslist.length,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: ((context, index) {
-                    var categoriesIndex =
-                        categoriesProvider!.catagorieslist[index];
+                  itemBuilder: ((context, categoriesGobalIndex) {
+                    var categoriesIndex = categoriesProvider!
+                        .catagorieslist[categoriesGobalIndex];
 
+                    var categoriesIndexId = categoriesProvider!
+                        .catagorieslist[categoriesGobalIndex].id;
+
+                    print('Categories id: ${categoriesId}');
+                    print(
+                        'Categories length: ${categoriesProvider!.catagorieslist.length}');
                     return categoriesProvider!.isLoading == false
                         ? Column(
                             children: [
                               Container(
                                   child: ExpansionTile(
-                                title: Text(
-                                    categoriesIndex.categoryName.toString()),
+                                title: Text(categoriesIndex.categoryName.toString()),
                                 children: [
                                   ListView.builder(
                                     itemCount: subCategoriesProvider!
@@ -113,46 +132,53 @@ class _MainDrawerState extends State<MainDrawer> {
                                       var subCategoriesIndex =
                                           subCategoriesProvider!
                                               .subCategorieslist[gobalIndex];
+
                                       return Container(
-                                        padding: EdgeInsets.only(left: 20),
-                                        child: categoriesIndex.id.toString() ==
-                                                subCategoriesIndex.categoryId
-                                                    .toString()
-                                            ? ExpansionTile(
-                                                title: Text(subCategoriesIndex
-                                                    .subCategorySlugName
-                                                    .toString()),
-                                                children: [
-                                                  ListView.builder(
-                                                      itemCount:
-                                                          subsubcategorieslist
-                                                              .length,
-                                                      shrinkWrap: true,
-                                                      itemBuilder:
-                                                          ((context, index) {
-                                                        var subsubindex =
-                                                            subsubcategorieslist[
-                                                                index];
-                                                        return Container(
-                                                            padding:
-                                                                EdgeInsets.only(
-                                                                    left: 30),
-                                                            child: subCategoriesIndex
-                                                                        .categoryId
-                                                                        .toString() ==
-                                                                    subsubindex
-                                                                        .subcategoryId
-                                                                        .toString()
-                                                                ? ExpansionTile(
-                                                                    title: Text(subsubindex
-                                                                        .subsubcategorySlugName
-                                                                        .toString()))
-                                                                : Container());
-                                                      }))
-                                                ],
-                                              )
-                                            : Container(),
-                                      );
+                                          padding: EdgeInsets.only(left: 20),
+                                          child: 
+                                          categoriesIndex.id
+                                                      .toString() ==
+                                                  subCategoriesIndex.categoryId
+                                                      .toString()
+                                              ? 
+                                              ExpansionTile(
+                                                  title: Container(
+                                                    child: Text(
+                                                        subCategoriesIndex
+                                                            .subCategorySlugName
+                                                            .toString()),
+                                                  ),
+                                                  children: [
+                                                    // ListView.builder(
+                                                    //     itemCount:
+                                                    //         subsubcategorieslist
+                                                    //             .length,
+                                                    //     shrinkWrap: true,
+                                                    //     itemBuilder:
+                                                    //         ((context, index) {
+                                                    //       var subsubindex =
+                                                    //           subsubcategorieslist[
+                                                    //               index];
+                                                    //       return Container(
+                                                    //           padding:
+                                                    //               EdgeInsets.only(
+                                                    //                   left: 30),
+                                                    //           child: subCategoriesIndex
+                                                    //                       .categoryId
+                                                    //                       .toString() ==
+                                                    //                   subsubindex
+                                                    //                       .subcategoryId
+                                                    //                       .toString()
+                                                    //               ? ExpansionTile(
+                                                    //                   title: Text(subsubindex
+                                                    //                       .subsubcategorySlugName
+                                                    //                       .toString()))
+                                                    //               : Container());
+                                                    //     }))
+                                                  ],
+                                                )
+                                              : Container()
+                                              );
                                     }),
                                   )
                                 ],

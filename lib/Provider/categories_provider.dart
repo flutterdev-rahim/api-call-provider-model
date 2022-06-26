@@ -5,6 +5,7 @@ import '../Model/categoriesModel.dart';
 
 class CategoriesProvider extends ChangeNotifier {
   List<Getcategory> catagorieslist = [];
+
   bool isLoading = false;
   Getcategorydata() async {
     isLoading = true;
@@ -16,4 +17,6 @@ class CategoriesProvider extends ChangeNotifier {
 
     // print(Categories);
   }
+
+  
 }
