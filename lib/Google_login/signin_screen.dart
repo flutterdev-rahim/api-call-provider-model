@@ -1,102 +1,85 @@
-import 'package:fashion_design/Google_login/authentication.dart';
-import 'package:fashion_design/Google_login/signIn_button.dart';
+//import 'package:fashion_design/Google_login/gobal.dart';
 import 'package:fashion_design/Google_login/userProfile_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_view.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 
-class SignInScreen extends StatefulWidget {
+class LogginScreen extends StatefulWidget {
   @override
-  _SignInScreenState createState() => _SignInScreenState();
+  State<LogginScreen> createState() => _LogginScreenState();
 }
-class _SignInScreenState extends State<SignInScreen> {
+
+class _LogginScreenState extends State<LogginScreen> {
+  bool signin = true;
+  //String daa='hi';
+ 
+  Future<User?> signInWithGoogle() async {
+    try {
+      //SIGNING IN WITH GOOGLE
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount!.authentication;
+
+      //CREATING CREDENTIAL FOR FIREBASE
+      final AuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleSignInAuthentication.idToken,
+          accessToken: googleSignInAuthentication.accessToken);
+
+      //SIGNING IN WITH CREDENTIAL & MAKING A USER IN FIREBASE  AND GETTING USER CLASS
+      final userCredential = await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      //CHECKING IS ON
+      assert(!user!.isAnonymous);
+      assert(await user!.getIdToken() != null);
+
+      final User? currentUser = await _auth.currentUser;
+      assert(currentUser!.uid == user!.uid);
+      print(user);
+
+      if (user != null) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: ((context) => UserInfoScreen(
+                      user: user,
+                      signin: signin,
+                    ))));
+      }
+
+      return user;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void signOut() async {
+    await googleSignIn.signOut();
+    await _auth.signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            bottom: 20.0,
-          ),
+      body: Center(
           child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Row(),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Flexible(
-                    //   flex: 1,
-                    //   child: Image.asset(
-                    //     'assets/firebase_logo.png',
-                    //     height: 160,
-                    //   ),
-                    // ),
-                    SizedBox(height: 20),
-                    Text(
-                      'FlutterFire',
-                      style: TextStyle(
-                 
-                        fontSize: 40,
-                      ),
-                    ),
-                    Text(
-                      'Authentication',
-                      style: TextStyle(
-                    
-                        fontSize: 40,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              FutureBuilder(
-                future: Authentication.initializeFirebase(context: context),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Text('Error initializing Firebase');
-                  } else if (snapshot.connectionState == ConnectionState.done) {
-                     return GoogleSignInButton();
-                  }
-                  return CircularProgressIndicator(
-                   
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+        children: [
+          SignInButton(Buttons.Google, onPressed: () {
+            signInWithGoogle();
+          }),
+          ElevatedButton(onPressed: signOut, child: Text('SignOut'))
+        ],
+      )),
     );
   }
 }
-class Authentication {
-  static Future<FirebaseApp> initializeFirebase({required BuildContext context}) async {
-    FirebaseApp firebaseApp = await Firebase.initializeApp();
 
-    // TODO: Add auto login logic
-     User? user = FirebaseAuth.instance.currentUser;
+final FirebaseAuth _auth = FirebaseAuth.instance;
+ //final GoogleSignIn googleSignIn = GoogleSignIn();
 
-  if (user != null) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => UserInfoScreen(
-          user: user,
-        ),
-      ),
-    );
-  }
 
-    return firebaseApp;
-  }
-
-  static signOut({required BuildContext context}) {
-
-  }
-}

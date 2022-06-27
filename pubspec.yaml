@@ -43,6 +43,7 @@ dependencies:
   google_sign_in: ^5.0.0
   flutter_countdown_timer: ^4.1.0
   flutter_signin_button: ^2.0.0
+  easy_sidemenu: ^0.3.1
 
   
   

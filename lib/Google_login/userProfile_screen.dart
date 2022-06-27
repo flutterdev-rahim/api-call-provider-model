@@ -4,20 +4,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+final GoogleSignIn googleSignIn = GoogleSignIn();
+
 class UserInfoScreen extends StatefulWidget {
-  const UserInfoScreen({Key? key, required User user})
-      : _user = user,
+   UserInfoScreen({Key? key, required User user,required signin})
+      : _user = user,islogged=signin,
         super(key: key);
 
   final User _user;
+  bool islogged=false;
 
   @override
   _UserInfoScreenState createState() => _UserInfoScreenState();
 }
 
 class _UserInfoScreenState extends State<UserInfoScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn googleSignIn = GoogleSignIn();
   late User _user;
   bool _isSigningOut = false;
   void signOut() async {
@@ -25,10 +27,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     await _auth.signOut();
   }
 
- 
 
+bool? isloging;
   @override
   void initState() {
+  
+    print(widget.islogged);
     _user = widget._user;
 
     super.initState();
@@ -64,17 +68,20 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       child: Material(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Image.network(_user.photoURL.toString())
+                          child: Icon(
+                            Icons.person,
+                            size: 60,
+                          ),
                         ),
                       ),
                     ),
               SizedBox(height: 16.0),
-              Text(
+     _user.emailVerified ==false?     Text(
                 'Hello',
                 style: TextStyle(
                   fontSize: 26,
                 ),
-              ),
+              ):Container(),
               SizedBox(height: 8.0),
               Text(
                 _user.displayName!,
@@ -112,13 +119,13 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        setState(() {
-                          _isSigningOut = true;
-                        });
+                        // setState(() {
+                        //   _isSigningOut = true;
+                        // });
                         signOut();
-                        setState(() {
-                          _isSigningOut = false;
-                        });
+                        // setState(() {
+                        //   _isSigningOut = false;
+                        // });
                         Navigator.pop(context);
                       },
                       child: Padding(
